@@ -43,7 +43,9 @@
 html, body, * { font-family: 'Roboto Condensed', system-ui, -apple-system, Segoe UI, Arial, sans-serif !important; }
 html, body { background: #D4DADC; }
 .leaflet-container { background: #D4DADC !important; }
+   
 
+    
 .leaflet-top.leaflet-left { left: auto !important; right: 12px !important; }
 .leaflet-control-zoom { margin-right: 0 !important; margin-left: 0 !important; }
 
@@ -98,6 +100,18 @@ html, body { background: #D4DADC; }
   line-height: 1;
   pointer-events: none;
 }
+
+     /* Pop-up responsive */
+.leaflet-popup-content-wrapper { border-radius: 12px; }
+@media (max-width: 640px){
+  .leaflet-popup-content-wrapper { max-width: 92vw !important; }
+  .leaflet-popup-content { max-width: 88vw; overflow-wrap: anywhere; }
+  .tt-body { max-height: 56vh; } /* más alto en móvil para leer cómodo */
+}
+/* scroll suave dentro del listado (iOS/Android) */
+.tt-body { max-height: 260px; overflow: auto; -webkit-overflow-scrolling: touch; }
+
+    
     
 </style>
     <div class='caption'>Iniciativas presentadas en el Encuentro Internacional de la Sociedad Civil del Festival Democracia (2025, Chile)*</div>
