@@ -44,7 +44,6 @@ html, body, * { font-family: 'Roboto Condensed', system-ui, -apple-system, Segoe
 html, body { background: #D4DADC; }
 .leaflet-container { background: #D4DADC !important; }
 
-/* Reposicionar el control de zoom a la esquina superior derecha */
 .leaflet-top.leaflet-left { left: auto !important; right: 12px !important; }
 .leaflet-control-zoom { margin-right: 0 !important; margin-left: 0 !important; }
 
@@ -58,7 +57,7 @@ html, body { background: #D4DADC; }
   max-width: 420px;
 }
 .tt-head { color: #F04C28; font-weight: 700; margin-bottom: 6px; }
-.tt-body { max-height: 260px; overflow: auto; }
+.tt-body { max-height: 260px; overflow: auto; -webkit-overflow-scrolling: touch; }
 .tt-item { margin-bottom: 8px; }
 .tt-title { color: #26262B; }
 .tt-meta { color: #26262B; opacity: 0.95; font-size: 12px; }
