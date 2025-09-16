@@ -460,44 +460,6 @@ html, body { background: #D4DADC; }
     
             var div_icon_021ab6d372aff67c56916e0676cc749b = L.divIcon({"className": "empty", "html": "\n            \u003cdiv class=\"id-label\" style=\"\n                position: relative;\n                left: 50%; top: 50%;\n                transform: translate(-50%, -61%);\n                color:#F04C28; font-weight:700; font-size:11px; text-align:center;\"\u003e4\u003c/div\u003e\n            "});
             marker_2b5fb9f2d48336f4f821a99d4ebaef1a.setIcon(div_icon_021ab6d372aff67c56916e0676cc749b);
-        <script>
-// --- FIX MÓVIL---
-(function () {
-
-  var map = window.map_6ff6c1e9cf8cf13b8ab2b0ef049a165c;
-
-  function hook(layer) {
-    if (!layer || !layer.openPopup || !layer.on) return;
-    // Tap/click abren el popup con el mismo contenido del hover
-    layer.on('click', function () { this.openPopup(); });
-    layer.on('touchstart', function (e) {
-      if (e && e.originalEvent) e.originalEvent.preventDefault();
-      this.openPopup();
-    });
-  }
-
-
-  map.eachLayer(function (lyr) {
-    if (lyr instanceof L.CircleMarker) hook(lyr);
-  });
-
-  map.on('layeradd', function (e) {
-    if (e.layer instanceof L.CircleMarker) hook(e.layer);
-  });
-
-
-  map.on('popupopen', function (e) {
-    try {
-      var body = e.popup.getElement().querySelector('.tt-body');
-      if (body) {
-        L.DomEvent.disableClickPropagation(body);
-        L.DomEvent.disableScrollPropagation(body);
-        body.style.webkitOverflowScrolling = 'touch';
-      }
-    } catch (_) {}
-  });
-})();
-</script>
-
+        
 </script>
 </html>
