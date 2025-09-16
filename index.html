@@ -1,465 +1,305 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="es">
 <head>
-    
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    
-        <script>
-            L_NO_TOUCH = false;
-            L_DISABLE_3D = false;
-        </script>
-    
-    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
-    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.js"></script>
-    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.css"/>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
-    
-            <meta name="viewport" content="width=device-width,
-                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-            <style>
-                #map_6ff6c1e9cf8cf13b8ab2b0ef049a165c {
-                    position: relative;
-                    width: 100.0%;
-                    height: 100.0%;
-                    left: 0.0%;
-                    top: 0.0%;
-                }
-            </style>
-        
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Iniciativas presentadas en el Encuentro Internacional de la Sociedad Civil del Festival Democracia (2025, Chile)*</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- PapaParse para leer CSV en el navegador -->
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<!-- Tipografía -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --amarillo:#EDE643;
+    --naranja:#F04C28;
+    --negro:#26262B;
+    --gris-frio:#CCCCD4;
+    --azul-marino:#203445;
+    --bg:#D4DADC;
+  }
+  html,body,*{font-family:"Roboto Condensed",system-ui,-apple-system,Segoe UI,Arial,sans-serif !important}
+  html,body{height:100%;margin:0;background:var(--bg)}
+  #map{position:fixed;inset:0}
+  .leaflet-container{background:var(--bg)!important}
+
+  /* Muevo el zoom a la esquina superior derecha */
+  .leaflet-top.leaflet-left{left:auto!important;right:12px!important}
+  .leaflet-control-zoom{margin-right:0!important;margin-left:0!important}
+
+  /* Título */
+  .caption{
+    position:absolute;top:12px;left:12px;z-index:9999;
+    color:var(--azul-marino);font-weight:700;font-size:16px;max-width:60vw;
+    text-shadow:0 1px 0 rgba(255,255,255,.6);
+  }
+  /* Nota al pie (se oculta en móvil) */
+  .footnote{
+    position:absolute;right:12px;bottom:10px;z-index:9999;
+    background:rgba(255,255,255,.85);border:1px solid var(--gris-frio);
+    border-radius:8px;padding:6px 8px;color:var(--azul-marino);
+    font-size:11px;line-height:1.15;max-width:36vw;pointer-events:none;
+  }
+  @media (max-width:640px){
+    .caption{max-width:86vw;font-size:14px;line-height:1.15}
+    .footnote{display:none}
+  }
+
+  /* Tooltip / Popup */
+  .leaflet-tooltip.ttip{
+    background:rgba(255,255,255,.97);
+    border:1px solid var(--gris-frio);
+    border-radius:10px;padding:10px 12px;color:var(--negro);
+    box-shadow:0 2px 10px rgba(0,0,0,.06);max-width:420px
+  }
+  .leaflet-popup-content-wrapper{border-radius:12px;border:1px solid var(--gris-frio)}
+  .leaflet-popup-content{margin:10px 12px}
+  .tt-head{color:var(--naranja);font-weight:700;margin-bottom:6px}
+  .tt-body{max-height:260px;overflow:auto}
+  .tt-item{margin-bottom:8px}
+  .tt-title{color:var(--negro)}
+  .tt-meta{color:var(--negro);opacity:.95;font-size:12px}
+
+  /* Etiqueta con el número naranja dentro de la burbuja */
+  .id-label{
+    white-space:nowrap;display:inline-block;text-align:center;line-height:1;pointer-events:none;
+    position:relative;left:50%;top:50%;transform:translate(-50%,-61%); /* centrado óptico */
+    color:var(--naranja);font-weight:700;font-size:11px;
+  }
+</style>
 </head>
 <body>
-    
-    
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;600;700&display=swap');
-html, body, * { font-family: 'Roboto Condensed', system-ui, -apple-system, Segoe UI, Arial, sans-serif !important; }
-html, body { background: #D4DADC; }
-.leaflet-container { background: #D4DADC !important; }
+  <div id="map"></div>
+  <div class="caption">Iniciativas presentadas en el Encuentro Internacional de la Sociedad Civil del Festival Democracia (2025, Chile)*</div>
+  <div class="footnote">*Los números en los clusters representan la cantidad de iniciativas por país. En el listado emergente (hover/tap) cada iniciativa incluye su número del Anexo.</div>
 
-/* Reposicionar el control de zoom a la esquina superior derecha */
-.leaflet-top.leaflet-left { left: auto !important; right: 12px !important; }
-.leaflet-control-zoom { margin-right: 0 !important; margin-left: 0 !important; }
-
-.leaflet-tooltip.ttip {
-  background: rgba(255,255,255,0.97);
-  border: 1px solid #CCCCD4;
-  border-radius: 10px;
-  padding: 10px 12px;
-  color: #26262B;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-  max-width: 420px;
-}
-.tt-head { color: #F04C28; font-weight: 700; margin-bottom: 6px; }
-.tt-body { max-height: 260px; overflow: auto; }
-.tt-item { margin-bottom: 8px; }
-.tt-title { color: #26262B; }
-.tt-meta { color: #26262B; opacity: 0.95; font-size: 12px; }
-
-.caption {
-  position:absolute; top: 12px; left: 12px; z-index:9999;
-  background: transparent; color: #203445;
-  font-weight:700; font-size: 16px; max-width: 60vw;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.6);
-}
-.footnote {
-  position: absolute; right: 12px; bottom: 10px; z-index: 9999;
-  background: rgba(255,255,255,0.85);
-  border: 1px solid #CCCCD4;
-  border-radius: 8px;
-  padding: 6px 8px;
-  color: #203445;
-  font-size: 11px;
-  line-height: 1.15;
-  max-width: 36vw;
-  pointer-events: none;
-}
-@media (max-width: 640px) {
-  .caption { max-width: 86vw; font-size: 14px; line-height: 1.15; }
-  .footnote { display: none; }
-}
-
-.leaflet-popup-content-wrapper { border-radius: 12px; border: 1px solid #CCCCD4; }
-.leaflet-popup-content { margin: 10px 12px; }
-
-.id-label {
-  white-space: nowrap;
-  display: inline-block;
-  text-align: center;
-  line-height: 1;
-  pointer-events: none;
-}
-</style>
-    <div class='caption'>Iniciativas presentadas en el Encuentro Internacional de la Sociedad Civil del Festival Democracia (2025, Chile)*</div>
-    <div class='footnote'>*Los números en los clusters representan la cantidad de iniciativas por país. En el listado emergente (hover) cada iniciativa incluye su número del Anexo.</div>
-    
-            <div class="folium-map" id="map_6ff6c1e9cf8cf13b8ab2b0ef049a165c" ></div>
-        
-</body>
 <script>
-    
-    
-            var map_6ff6c1e9cf8cf13b8ab2b0ef049a165c = L.map(
-                "map_6ff6c1e9cf8cf13b8ab2b0ef049a165c",
-                {
-                    center: [10.0, -25.0],
-                    crs: L.CRS.EPSG3857,
-                    maxBounds: [[-60, -180], [85, 180]],
-                    zoom: 2.2,
-                    zoomControl: true,
-                    preferCanvas: false,
-                }
-            );
-            L.control.scale().addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
+(async function(){
+  // --- Utilidades ---
+  const cleanEnd = s=>{
+    if(s==null) return "";
+    s = String(s).trim();
+    if(/^nan$/i.test(s)) return "";
+    s = s.replace(/^['"“”„«»‹›‚‘’‐–—- ]+|['"“”„«»‹›‚‘’‐–—- ]+$/g,"");
+    s = s.replace(/[\.·;:,!¡¿\?]+$/,"").trim();
+    return s;
+  };
+  const normalize = s=>{
+    if(!s) return "";
+    return s.toString().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
+  };
+  const orgDisplay = (orgRaw,country)=>{
+    let oc = cleanEnd(orgRaw), n = normalize(oc);
+    if(n==="sin informacion" || n==="sininformacion" || oc==="") return "";
+    const excMX = normalize("Gobiernos locales y movimientos de izquierda");
+    const excCL = normalize("Gobierno de Salvador Allende");
+    if((country==="México" && n===excMX) || (country==="Chile" && n===excCL)) return oc;
+    if(n.includes("gobierno")) return "Gubernamental";
+    return oc;
+  };
 
-            
+  // --- Coordenadas por país ---
+  const coords = {
+    "Brasil":[-14.2350,-51.9253],
+    "Chile":[-33.4489,-70.6693],
+    "Colombia":[4.5709,-74.2973],
+    "España":[40.4637,-3.7492],
+    "Francia":[46.2276,2.2137],
+    "Guatemala":[15.7835,-90.2308],
+    "México":[23.6345,-102.5528],
+    "Suecia":[60.1282,18.6435],
+    "Uruguay":[-32.5228,-55.7658]
+  };
 
-        
-    
-            var tile_layer_c19714300471b0ee1b46492ab5dfe7dc = L.tileLayer(
-                "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
-                {"attribution": "\u00a9 CARTO", "detectRetina": false, "maxNativeZoom": 6, "maxZoom": 6, "minZoom": 2, "noWrap": true, "opacity": 1, "subdomains": "abc", "tms": false}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            var circle_marker_8fa4d6551957cd1c37049e1c3fcb1693 = L.circleMarker(
-                [-14.235, -51.9253],
-                {"bubblingMouseEvents": true, "color": null, "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EDE643", "fillOpacity": 0.95, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 31.644, "stroke": true, "weight": 0}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            circle_marker_8fa4d6551957cd1c37049e1c3fcb1693.bindTooltip(
-                `<div>
-                     <div class='tt'><div class='tt-head'>Brasil · 13 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#7 | <b>Hambre Cero</b></div><div class='tt-meta'>Gubernamental — Brasil</div></div><div class='tt-item'><div class='tt-title'>#8 | <b>Programa de democratización de acceso a la educación superior</b></div><div class='tt-meta'>Gubernamental — Brasil</div></div><div class='tt-item'><div class='tt-title'>#13 | <b>Tem gente com fome</b></div><div class='tt-meta'>Coalizao Negra Por Direitos — Brasil</div></div><div class='tt-item'><div class='tt-title'>#14 | <b>Justicia Fiscal y justicia racial</b></div><div class='tt-meta'>OXFAM Brasil — Brasil</div></div><div class='tt-item'><div class='tt-title'>#15 | <b>Actuación Internacional para vigilancia de las elecciones</b></div><div class='tt-meta'>Conectas Direitos Humanos Brasil, Organizaciones Pacto de la Democracia — Brasil</div></div><div class='tt-item'><div class='tt-title'>#17 | <b>Bolsa de Familia</b></div><div class='tt-meta'>Brasil</div></div><div class='tt-item'><div class='tt-title'>#20 | <b>Iniciativas de diálogo con redes de grupos religiosos (evangélicos)</b></div><div class='tt-meta'>Partidos políticos e instituciones de encuestas — Brasil</div></div><div class='tt-item'><div class='tt-title'>#21 | <b>Narrativas</b></div><div class='tt-meta'>Católicas por el Derecho a Decidir — Brasil</div></div><div class='tt-item'><div class='tt-title'>#23 | <b>Campañas para movilizar el voto joven</b></div><div class='tt-meta'>Brasil — Brasil</div></div><div class='tt-item'><div class='tt-title'>#35 | <b>Red Nacional de Protección a Comunicadores y Activistas</b></div><div class='tt-meta'>Instituto Vladimir Herzog — Brasil</div></div><div class='tt-item'><div class='tt-title'>#36 | <b>Establecimiento de la Fundação Lauro Campos e Marielle Franco</b></div><div class='tt-meta'>Fundação Lauro Campos e Marielle Franco — Brasil</div></div><div class='tt-item'><div class='tt-title'>#40 | <b>Red regional de universidades para enfrentar la desinformación</b></div><div class='tt-meta'>Instituto democracia en jaque — Brasil</div></div><div class='tt-item'><div class='tt-title'>#45 | <b>Sala de articulación contra la desinformación</b></div><div class='tt-meta'>Aláfia Lab — Brasil</div></div></div></div>
-                 </div>`,
-                {"className": "ttip", "sticky": true}
-            );
-        
-    
-        var popup_bf14f152b693e9c98761d918352610c8 = L.popup({"maxWidth": 460});
+  // --- Anexo (para IDs; si tu CSV ya trae ID/AnexoID, el script lo usa y no necesita esto) ---
+  const annexText = `
+1.  Mejoras en la Escuelas Administración Pública (Chile)
+2.  Acá el agua hierve también a 100 grados (Uruguay)
+3.  Educación democrática en el sistema educativo (Suecia)
+4.  Democracia y Derecho de Mujeres (Chile)
+5.  Faro Progresista (Uruguay)
+6.  Programa de formación Ciudadana (Chile)
+7.  Hambre Cero (Brasil)
+8.  Programa de democratización de acceso a la educación superior (Brasil)
+9.  Comunidades energéticas (Colombia)
+10. Política de Reforma Agraria (Colombia)
+11. Cabildos Abiertos (Colombia)
+12. Participación de la sociedad civil en política exterior (Chile)
+13. Tem gente com fome! (Brasil)
+14. Justicia Fiscal y justicia racial (Brasil)
+15. Actuación Internacional para vigilancia de las elecciones (Brasil)
+16. Museo de la Memoria y los Derechos Humanos (Chile)
+17. Bolsa de Familia (Brasil)
+18. Democracia Paritaria (Brasil)
+19. Campaña sobre el Acuerdo de Escazú
+20. Iniciativas de diálogo con redes de grupos religiosos (evangélicos)
+21. Narrativas: Católicas por el Derecho a Decidir
+22. Observatorio de ganancias de las empresas
+23. Campañas para movilizar el voto joven (Brasil)
+24. Ley de identidad de género (Chile y España)
+25. Ley del AUGE (GES) (Chile)
+26. Referéndum en Francia: mecanismos de Participación Ciudadana (Francia)
+27. Políticas Públicas de Salvador Allende (Chile)
+28. Utopías: Espacios Públicos Populares (México)
+29. Políticas de Derechos Humanos (España)
+30. Iniciativas Migratorias
+31. Seguridad como Garantía para la Democracia
+32. Memoria Democrática en la Educación
+33. Fortalecimiento del proceso de descentralización (Chile)
+34. Iniciativas populares durante el proceso constituyente (Chile)
+35. Red Nacional de Protección a Comunicadores y Activistas (Brasil)
+36. Fundação Lauro Campos e Marielle Franco (Brasil)
+37. Foro Cono Sur (Uruguay)
+38. Mecanismos para involucramiento de la ciudadanía en políticas públicas (Chile)
+39. Autonomía estratégica para América Latina
+40. Red regional de universidades contra la desinformación (Brasil)
+41. Autogestión en el desarrollo del habitar (Chile)
+42. Diplomacia ciudadana del sur global (Chile)
+43. Cátedra ciudadana sobre antifascismo y DDHH (Chile)
+44. Profundización de la democracia (Chile)
+45. Sala de articulación contra la desinformación (Brasil)
+46. El Frente Amplio te escucha (Uruguay)
+47. Plan de formalización de la diplomacia (Chile)
+48. Proyecto de condonación del CAE (Chile)
+49. Sistema Nacional de Cuidados (Chile y Uruguay)
+50. Plan Buen Vivir (Chile)
+51. Reforma Pensional en Colombia (Colombia)
+52. Barrio maestranza Ukamau (Chile)
+53. Avenida comunidad (Guatemala)
+54. Diálogos imposibles (México)
+55. Democracia en plano digital (México)
+56. Comunicación digital (Chile)
+57. Seguridad pública (Chile)
+58. Vivienda feminista (Chile)
+59. Horizonte Ciudadano (Chile)
+`.trim();
 
-        
-            var html_2acda83326198e4b1990b002487a96bc = $(`<div id="html_2acda83326198e4b1990b002487a96bc" style="width: 100.0%; height: 100.0%;"><div class='tt'><div class='tt-head'>Brasil · 13 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#7 | <b>Hambre Cero</b></div><div class='tt-meta'>Gubernamental — Brasil</div></div><div class='tt-item'><div class='tt-title'>#8 | <b>Programa de democratización de acceso a la educación superior</b></div><div class='tt-meta'>Gubernamental — Brasil</div></div><div class='tt-item'><div class='tt-title'>#13 | <b>Tem gente com fome</b></div><div class='tt-meta'>Coalizao Negra Por Direitos — Brasil</div></div><div class='tt-item'><div class='tt-title'>#14 | <b>Justicia Fiscal y justicia racial</b></div><div class='tt-meta'>OXFAM Brasil — Brasil</div></div><div class='tt-item'><div class='tt-title'>#15 | <b>Actuación Internacional para vigilancia de las elecciones</b></div><div class='tt-meta'>Conectas Direitos Humanos Brasil, Organizaciones Pacto de la Democracia — Brasil</div></div><div class='tt-item'><div class='tt-title'>#17 | <b>Bolsa de Familia</b></div><div class='tt-meta'>Brasil</div></div><div class='tt-item'><div class='tt-title'>#20 | <b>Iniciativas de diálogo con redes de grupos religiosos (evangélicos)</b></div><div class='tt-meta'>Partidos políticos e instituciones de encuestas — Brasil</div></div><div class='tt-item'><div class='tt-title'>#21 | <b>Narrativas</b></div><div class='tt-meta'>Católicas por el Derecho a Decidir — Brasil</div></div><div class='tt-item'><div class='tt-title'>#23 | <b>Campañas para movilizar el voto joven</b></div><div class='tt-meta'>Brasil — Brasil</div></div><div class='tt-item'><div class='tt-title'>#35 | <b>Red Nacional de Protección a Comunicadores y Activistas</b></div><div class='tt-meta'>Instituto Vladimir Herzog — Brasil</div></div><div class='tt-item'><div class='tt-title'>#36 | <b>Establecimiento de la Fundação Lauro Campos e Marielle Franco</b></div><div class='tt-meta'>Fundação Lauro Campos e Marielle Franco — Brasil</div></div><div class='tt-item'><div class='tt-title'>#40 | <b>Red regional de universidades para enfrentar la desinformación</b></div><div class='tt-meta'>Instituto democracia en jaque — Brasil</div></div><div class='tt-item'><div class='tt-title'>#45 | <b>Sala de articulación contra la desinformación</b></div><div class='tt-meta'>Aláfia Lab — Brasil</div></div></div></div></div>`)[0];
-            popup_bf14f152b693e9c98761d918352610c8.setContent(html_2acda83326198e4b1990b002487a96bc);
-        
+  const annex = annexText.split(/\n+/).map(line=>{
+    const m = line.match(/^\s*(\d+)\.\s*(.+?)(?:\s*\(([^)]+)\))?$/);
+    if(!m) return null;
+    const id = +m[1];
+    const title = cleanEnd((m[2]||"").replace(/\s*:\s*.*$/,""));
+    const country = (m[3]||"").trim();
+    return {id,title,country, norm:normalize(title)};
+  }).filter(Boolean);
 
-        circle_marker_8fa4d6551957cd1c37049e1c3fcb1693.bindPopup(popup_bf14f152b693e9c98761d918352610c8)
-        ;
+  // Jaccard simple
+  const jacc = (a,b)=>{
+    const A = new Set(a.split(" ").filter(Boolean));
+    const B = new Set(b.split(" ").filter(Boolean));
+    const inter = [...A].filter(x=>B.has(x)).length;
+    return inter / (A.size || 1);
+  };
 
-        
-    
-    
-            var marker_0e7fca7a2f75f117f1100147040734ec = L.marker(
-                [-14.235, -51.9253],
-                {}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            var div_icon_f5e45784a25c4f65557f2e743eaccb3f = L.divIcon({"className": "empty", "html": "\n            \u003cdiv class=\"id-label\" style=\"\n                position: relative;\n                left: 50%; top: 50%;\n                transform: translate(-50%, -61%);\n                color:#F04C28; font-weight:700; font-size:11px; text-align:center;\"\u003e13\u003c/div\u003e\n            "});
-            marker_0e7fca7a2f75f117f1100147040734ec.setIcon(div_icon_f5e45784a25c4f65557f2e743eaccb3f);
-        
-    
-            var circle_marker_0e6db23dbd828d15023bd96efea50823 = L.circleMarker(
-                [-33.4489, -70.6693],
-                {"bubblingMouseEvents": true, "color": null, "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EDE643", "fillOpacity": 0.95, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 51.3, "stroke": true, "weight": 0}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            circle_marker_0e6db23dbd828d15023bd96efea50823.bindTooltip(
-                `<div>
-                     <div class='tt'><div class='tt-head'>Chile · 26 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#1 | <b>Mejoras en la Escuelas Administración Pública</b></div><div class='tt-meta'>FSD — Chile</div></div><div class='tt-item'><div class='tt-title'>#4 | <b>Democracia y Derecho de Mujeres</b></div><div class='tt-meta'>Corporación Humanas — Chile</div></div><div class='tt-item'><div class='tt-title'>#6 | <b>Programa de formación Ciudadana</b></div><div class='tt-meta'>Mineduc e INJUV — Chile</div></div><div class='tt-item'><div class='tt-title'>#16 | <b>Museo de la Memoria y  los DD.HH</b></div><div class='tt-meta'>Chile</div></div><div class='tt-item'><div class='tt-title'>#18 | <b>Seguridad como Garantía para la Democracia</b></div><div class='tt-meta'>Chile</div></div><div class='tt-item'><div class='tt-title'>#25 | <b>Ley del AUGE (GES)</b></div><div class='tt-meta'>Chile</div></div><div class='tt-item'><div class='tt-title'>#27 | <b>Políticas Públicas de Salvador Allende (Ej. &quot;El litro de leche por niño&quot;)</b></div><div class='tt-meta'>Gobierno de Salvador Allende — Chile</div></div><div class='tt-item'><div class='tt-title'>#30 | <b>Iniciativas Migratorias: Regularización de Inmigrantes</b></div><div class='tt-meta'>Chile</div></div><div class='tt-item'><div class='tt-title'>#31 | <b>Fortalecimiento de proceso de descentralización como expresión de la democracia</b></div><div class='tt-meta'>MODATIMA — Chile</div></div><div class='tt-item'><div class='tt-title'>#32 | <b>Memoria Democrática en la Educación</b></div><div class='tt-meta'>Chile</div></div><div class='tt-item'><div class='tt-title'>#33 | <b>Profundización de la democracia</b></div><div class='tt-meta'>Fundación por la democracia — Chile</div></div><div class='tt-item'><div class='tt-title'>#34 | <b>Iniciativas populares durante proceso constituyente</b></div><div class='tt-meta'>Nodo XXI — Chile</div></div><div class='tt-item'><div class='tt-title'>#38 | <b>Mecanismos para involucramiento de ciudadanía en políticas públicas</b></div><div class='tt-meta'>La Casa Común — Chile</div></div><div class='tt-item'><div class='tt-title'>#39 | <b>Espacio de autonomía estratégica para América Latina</b></div><div class='tt-meta'>Nuevas voces política exterior — Chile</div></div><div class='tt-item'><div class='tt-title'>#41 | <b>Autogestión en el desarrollo del habitar</b></div><div class='tt-meta'>Movimiento de pobladoras de estación central (UKAMAU) — Chile</div></div><div class='tt-item'><div class='tt-title'>#42 | <b>Diplomacia ciudadana del sur global</b></div><div class='tt-meta'>Alada — Chile</div></div><div class='tt-item'><div class='tt-title'>#43 | <b>Cátedra ciudadana sobre antifascismo y DDHH</b></div><div class='tt-meta'>Alada — Chile</div></div><div class='tt-item'><div class='tt-title'>#44 | <b>Plan de formalización de la diplomacia</b></div><div class='tt-meta'>Política Exterior Progresista — Chile</div></div><div class='tt-item'><div class='tt-title'>#48 | <b>Proyecto de condonación del CAE</b></div><div class='tt-meta'>Nodo XXI — Chile</div></div><div class='tt-item'><div class='tt-title'>#49 | <b>Sistema Nacional de Cuidados</b></div><div class='tt-meta'>Nodo XXI — Chile</div></div><div class='tt-item'><div class='tt-title'>#50 | <b>Plan Buen Vivir</b></div><div class='tt-meta'>Nodo XXI — Chile</div></div><div class='tt-item'><div class='tt-title'>#52 | <b>Barrio maestranza Ukamau</b></div><div class='tt-meta'>Ukamau — Chile</div></div><div class='tt-item'><div class='tt-title'>#56 | <b>Comunicación digital</b></div><div class='tt-meta'>Fundación por la democracia — Chile</div></div><div class='tt-item'><div class='tt-title'>#57 | <b>Seguridad pública</b></div><div class='tt-meta'>Fundación por la democracia — Chile</div></div><div class='tt-item'><div class='tt-title'>#58 | <b>Vivienda</b></div><div class='tt-meta'>Fundación por la democracia — Chile</div></div><div class='tt-item'><div class='tt-title'>#59 | <b>Horizonte Ciudadano</b></div><div class='tt-meta'>Horizonte ciudadano — Chile</div></div></div></div>
-                 </div>`,
-                {"className": "ttip", "sticky": true}
-            );
-        
-    
-        var popup_37fd3217b6c10ded93fb5e30953818ee = L.popup({"maxWidth": 460});
+  // --- Carga CSV ---
+  const csvURL = "IniciativasFinal.csv"; // debe estar junto al index.html
+  const parse = await new Promise((res,rej)=>{
+    Papa.parse(csvURL,{
+      download:true, header:true, delimiter:";",
+      complete:res, error:rej, skipEmptyLines:true
+    });
+  });
+  let rows = parse.data.map(r=>({
+    Pais: (r["País"]??r["Pais"]??"").trim(),
+    Nombre: cleanEnd(r["Nombre"]),
+    Org: cleanEnd(r["Organización impulsora"]??r["Organizacion impulsora"]),
+    AnnexID: cleanEnd(r["AnexoID"]??r["ID"])
+  })).filter(r=>r.Pais && r.Pais!=="Internacional");
 
-        
-            var html_c90181b7693d188059758a07b9f712a1 = $(`<div id="html_c90181b7693d188059758a07b9f712a1" style="width: 100.0%; height: 100.0%;"><div class='tt'><div class='tt-head'>Chile · 26 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#1 | <b>Mejoras en la Escuelas Administración Pública</b></div><div class='tt-meta'>FSD — Chile</div></div><div class='tt-item'><div class='tt-title'>#4 | <b>Democracia y Derecho de Mujeres</b></div><div class='tt-meta'>Corporación Humanas — Chile</div></div><div class='tt-item'><div class='tt-title'>#6 | <b>Programa de formación Ciudadana</b></div><div class='tt-meta'>Mineduc e INJUV — Chile</div></div><div class='tt-item'><div class='tt-title'>#16 | <b>Museo de la Memoria y  los DD.HH</b></div><div class='tt-meta'>Chile</div></div><div class='tt-item'><div class='tt-title'>#18 | <b>Seguridad como Garantía para la Democracia</b></div><div class='tt-meta'>Chile</div></div><div class='tt-item'><div class='tt-title'>#25 | <b>Ley del AUGE (GES)</b></div><div class='tt-meta'>Chile</div></div><div class='tt-item'><div class='tt-title'>#27 | <b>Políticas Públicas de Salvador Allende (Ej. &quot;El litro de leche por niño&quot;)</b></div><div class='tt-meta'>Gobierno de Salvador Allende — Chile</div></div><div class='tt-item'><div class='tt-title'>#30 | <b>Iniciativas Migratorias: Regularización de Inmigrantes</b></div><div class='tt-meta'>Chile</div></div><div class='tt-item'><div class='tt-title'>#31 | <b>Fortalecimiento de proceso de descentralización como expresión de la democracia</b></div><div class='tt-meta'>MODATIMA — Chile</div></div><div class='tt-item'><div class='tt-title'>#32 | <b>Memoria Democrática en la Educación</b></div><div class='tt-meta'>Chile</div></div><div class='tt-item'><div class='tt-title'>#33 | <b>Profundización de la democracia</b></div><div class='tt-meta'>Fundación por la democracia — Chile</div></div><div class='tt-item'><div class='tt-title'>#34 | <b>Iniciativas populares durante proceso constituyente</b></div><div class='tt-meta'>Nodo XXI — Chile</div></div><div class='tt-item'><div class='tt-title'>#38 | <b>Mecanismos para involucramiento de ciudadanía en políticas públicas</b></div><div class='tt-meta'>La Casa Común — Chile</div></div><div class='tt-item'><div class='tt-title'>#39 | <b>Espacio de autonomía estratégica para América Latina</b></div><div class='tt-meta'>Nuevas voces política exterior — Chile</div></div><div class='tt-item'><div class='tt-title'>#41 | <b>Autogestión en el desarrollo del habitar</b></div><div class='tt-meta'>Movimiento de pobladoras de estación central (UKAMAU) — Chile</div></div><div class='tt-item'><div class='tt-title'>#42 | <b>Diplomacia ciudadana del sur global</b></div><div class='tt-meta'>Alada — Chile</div></div><div class='tt-item'><div class='tt-title'>#43 | <b>Cátedra ciudadana sobre antifascismo y DDHH</b></div><div class='tt-meta'>Alada — Chile</div></div><div class='tt-item'><div class='tt-title'>#44 | <b>Plan de formalización de la diplomacia</b></div><div class='tt-meta'>Política Exterior Progresista — Chile</div></div><div class='tt-item'><div class='tt-title'>#48 | <b>Proyecto de condonación del CAE</b></div><div class='tt-meta'>Nodo XXI — Chile</div></div><div class='tt-item'><div class='tt-title'>#49 | <b>Sistema Nacional de Cuidados</b></div><div class='tt-meta'>Nodo XXI — Chile</div></div><div class='tt-item'><div class='tt-title'>#50 | <b>Plan Buen Vivir</b></div><div class='tt-meta'>Nodo XXI — Chile</div></div><div class='tt-item'><div class='tt-title'>#52 | <b>Barrio maestranza Ukamau</b></div><div class='tt-meta'>Ukamau — Chile</div></div><div class='tt-item'><div class='tt-title'>#56 | <b>Comunicación digital</b></div><div class='tt-meta'>Fundación por la democracia — Chile</div></div><div class='tt-item'><div class='tt-title'>#57 | <b>Seguridad pública</b></div><div class='tt-meta'>Fundación por la democracia — Chile</div></div><div class='tt-item'><div class='tt-title'>#58 | <b>Vivienda</b></div><div class='tt-meta'>Fundación por la democracia — Chile</div></div><div class='tt-item'><div class='tt-title'>#59 | <b>Horizonte Ciudadano</b></div><div class='tt-meta'>Horizonte ciudadano — Chile</div></div></div></div></div>`)[0];
-            popup_37fd3217b6c10ded93fb5e30953818ee.setContent(html_c90181b7693d188059758a07b9f712a1);
-        
+  // Si no viene ID en CSV, intentamos inferir con el Anexo
+  if(!rows.some(r=>r.AnnexID)){
+    rows.forEach(r=>{
+      const n = normalize(r.Nombre);
+      let best = {score:-1,id:null};
+      for(const a of annex){
+        let s = jacc(a.norm,n);
+        if(a.country){
+          const pc = normalize(r.Pais), ac = normalize(a.country);
+          if(pc && (pc.includes(ac)||ac.includes(pc))) s += 0.1;
+        }
+        if(n.includes(a.norm) || a.norm.includes(n)) s += 0.1;
+        if(s>best.score) best = {score:s,id:a.id};
+      }
+      r.AnnexID = (best.score>=0.35 && best.id) ? best.id : "";
+    });
+  }
 
-        circle_marker_0e6db23dbd828d15023bd96efea50823.bindPopup(popup_37fd3217b6c10ded93fb5e30953818ee)
-        ;
+  // --- Construcción de contenido por país ---
+  const byCountry = {};
+  for(const r of rows){
+    if(!coords[r.Pais]) continue; // sin coordenadas no lo ubicamos
+    byCountry[r.Pais] ??= {items:[], count:0};
+    byCountry[r.Pais].items.push(r);
+    byCountry[r.Pais].count++;
+  }
 
-        
-    
-    
-            var marker_d83f5e90706ab83f76fa88606f783add = L.marker(
-                [-33.4489, -70.6693],
-                {}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            var div_icon_1db3610553529280ee1f91297cfebf79 = L.divIcon({"className": "empty", "html": "\n            \u003cdiv class=\"id-label\" style=\"\n                position: relative;\n                left: 50%; top: 50%;\n                transform: translate(-50%, -61%);\n                color:#F04C28; font-weight:700; font-size:11px; text-align:center;\"\u003e26\u003c/div\u003e\n            "});
-            marker_d83f5e90706ab83f76fa88606f783add.setIcon(div_icon_1db3610553529280ee1f91297cfebf79);
-        
-    
-            var circle_marker_222df8623ed23139029e962c005744a7 = L.circleMarker(
-                [4.5709, -74.2973],
-                {"bubblingMouseEvents": true, "color": null, "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EDE643", "fillOpacity": 0.95, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 18.036, "stroke": true, "weight": 0}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            circle_marker_222df8623ed23139029e962c005744a7.bindTooltip(
-                `<div>
-                     <div class='tt'><div class='tt-head'>Colombia · 4 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#9 | <b>Comunidades energéticas</b></div><div class='tt-meta'>Ministerio de Energía — Colombia</div></div><div class='tt-item'><div class='tt-title'>#10 | <b>Política de Reforma Agraria</b></div><div class='tt-meta'>Gubernamental — Colombia</div></div><div class='tt-item'><div class='tt-title'>#11 | <b>Cabildos Abiertos</b></div><div class='tt-meta'>Gubernamental — Colombia</div></div><div class='tt-item'><div class='tt-title'>#51 | <b>Reforma Pensional en Colombia</b></div><div class='tt-meta'>Fundación Instituto de Pensamiento Progresista — Colombia</div></div></div></div>
-                 </div>`,
-                {"className": "ttip", "sticky": true}
-            );
-        
-    
-        var popup_5345b31a50e41c17b9d033a7144024b1 = L.popup({"maxWidth": 460});
+  // --- Mapa ---
+  const map = L.map('map',{
+    center:[10,-25], zoom:2.2, minZoom:2, maxZoom:6, zoomControl:true, worldCopyJump:false,
+    maxBounds:[[ -60, -180 ], [ 85, 180 ]]
+  });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png',{
+    attribution:'© CARTO', noWrap:true
+  }).addTo(map);
 
-        
-            var html_6117f7683b73e0cb8e3d8974121ee99a = $(`<div id="html_6117f7683b73e0cb8e3d8974121ee99a" style="width: 100.0%; height: 100.0%;"><div class='tt'><div class='tt-head'>Colombia · 4 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#9 | <b>Comunidades energéticas</b></div><div class='tt-meta'>Ministerio de Energía — Colombia</div></div><div class='tt-item'><div class='tt-title'>#10 | <b>Política de Reforma Agraria</b></div><div class='tt-meta'>Gubernamental — Colombia</div></div><div class='tt-item'><div class='tt-title'>#11 | <b>Cabildos Abiertos</b></div><div class='tt-meta'>Gubernamental — Colombia</div></div><div class='tt-item'><div class='tt-title'>#51 | <b>Reforma Pensional en Colombia</b></div><div class='tt-meta'>Fundación Instituto de Pensamiento Progresista — Colombia</div></div></div></div></div>`)[0];
-            popup_5345b31a50e41c17b9d033a7144024b1.setContent(html_6117f7683b73e0cb8e3d8974121ee99a);
-        
+  // --- Render de cada país ---
+  const vals = Object.values(byCountry).map(v=>v.count);
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  const scale = n => (mx===mn) ? (13.5+51.3)/2 : 13.5 + (n-mn)*(51.3-13.5)/(mx-mn);
 
-        circle_marker_222df8623ed23139029e962c005744a7.bindPopup(popup_5345b31a50e41c17b9d033a7144024b1)
-        ;
+  const tooltipHTML = (country, list)=>{
+    list.sort((a,b)=>(+a.AnnexID||1e9)-(+b.AnnexID||1e9));
+    const head = `<div class="tt-head">${country} · ${list.length} iniciativas</div>`;
+    const items = list.map(r=>{
+      const title = cleanEnd(r.Nombre);
+      const idtxt = r.AnnexID ? `#${r.AnnexID} | ` : "";
+      const org = orgDisplay(r.Org, r.Pais);
+      const meta = org ? `${org} — ${country}` : `${country}`;
+      return `<div class="tt-item">
+        <div class="tt-title">${idtxt}<b>${escapeHtml(title)}</b></div>
+        <div class="tt-meta">${escapeHtml(meta)}</div>
+      </div>`;
+    }).join("");
+    return `<div class="tt"><div class="tt-body">${head}${items}</div></div>`;
+  };
 
-        
-    
-    
-            var marker_b17930e3931d26c3ed1e6319e51dd5ba = L.marker(
-                [4.5709, -74.2973],
-                {}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            var div_icon_7156772c298aa3b6e4e8d1804f6ac878 = L.divIcon({"className": "empty", "html": "\n            \u003cdiv class=\"id-label\" style=\"\n                position: relative;\n                left: 50%; top: 50%;\n                transform: translate(-50%, -61%);\n                color:#F04C28; font-weight:700; font-size:11px; text-align:center;\"\u003e4\u003c/div\u003e\n            "});
-            marker_b17930e3931d26c3ed1e6319e51dd5ba.setIcon(div_icon_7156772c298aa3b6e4e8d1804f6ac878);
-        
-    
-            var circle_marker_126dba5efe922ab2734e9c90120e5479 = L.circleMarker(
-                [40.4637, -3.7492],
-                {"bubblingMouseEvents": true, "color": null, "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EDE643", "fillOpacity": 0.95, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 16.524, "stroke": true, "weight": 0}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            circle_marker_126dba5efe922ab2734e9c90120e5479.bindTooltip(
-                `<div>
-                     <div class='tt'><div class='tt-head'>España · 3 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#22 | <b>Observatorio de ganancias de las empresas</b></div><div class='tt-meta'>España</div></div><div class='tt-item'><div class='tt-title'>#24 | <b>Ley de identidad de género</b></div><div class='tt-meta'>Gubernamental — España</div></div><div class='tt-item'><div class='tt-title'>#29 | <b>Políticas de Derechos Humanos en España (Matrimonio Homosexual, Ley de Aborto, Igualdad de Género)</b></div><div class='tt-meta'>Gubernamental — España</div></div></div></div>
-                 </div>`,
-                {"className": "ttip", "sticky": true}
-            );
-        
-    
-        var popup_e41124deafc349340019e0018f477ddf = L.popup({"maxWidth": 460});
+  function escapeHtml(s){return (s??"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]))}
 
-        
-            var html_36207c759fcbc4b6661794007aeb1b4f = $(`<div id="html_36207c759fcbc4b6661794007aeb1b4f" style="width: 100.0%; height: 100.0%;"><div class='tt'><div class='tt-head'>España · 3 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#22 | <b>Observatorio de ganancias de las empresas</b></div><div class='tt-meta'>España</div></div><div class='tt-item'><div class='tt-title'>#24 | <b>Ley de identidad de género</b></div><div class='tt-meta'>Gubernamental — España</div></div><div class='tt-item'><div class='tt-title'>#29 | <b>Políticas de Derechos Humanos en España (Matrimonio Homosexual, Ley de Aborto, Igualdad de Género)</b></div><div class='tt-meta'>Gubernamental — España</div></div></div></div></div>`)[0];
-            popup_e41124deafc349340019e0018f477ddf.setContent(html_36207c759fcbc4b6661794007aeb1b4f);
-        
+  for(const [country,data] of Object.entries(byCountry)){
+    const [lat,lon] = coords[country];
+    const r = scale(data.count);
+    const tip = tooltipHTML(country,data.items);
 
-        circle_marker_126dba5efe922ab2734e9c90120e5479.bindPopup(popup_e41124deafc349340019e0018f477ddf)
-        ;
+    const circle = L.circleMarker([lat,lon],{
+      radius:r, color:null, weight:0, fill:true, fillColor:"var(--amarillo)".replace("var(--amarillo)","#EDE643"),
+      fillOpacity:.95
+    }).addTo(map);
 
-        
-    
-    
-            var marker_c79dc949555b9b22aeae2a6f1644e12c = L.marker(
-                [40.4637, -3.7492],
-                {}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            var div_icon_b114543c15c80663b19051d6563592c8 = L.divIcon({"className": "empty", "html": "\n            \u003cdiv class=\"id-label\" style=\"\n                position: relative;\n                left: 50%; top: 50%;\n                transform: translate(-50%, -61%);\n                color:#F04C28; font-weight:700; font-size:11px; text-align:center;\"\u003e3\u003c/div\u003e\n            "});
-            marker_c79dc949555b9b22aeae2a6f1644e12c.setIcon(div_icon_b114543c15c80663b19051d6563592c8);
-        
-    
-            var circle_marker_cb7d521636c840913531aea2c9289bb3 = L.circleMarker(
-                [46.2276, 2.2137],
-                {"bubblingMouseEvents": true, "color": null, "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EDE643", "fillOpacity": 0.95, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 13.5, "stroke": true, "weight": 0}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            circle_marker_cb7d521636c840913531aea2c9289bb3.bindTooltip(
-                `<div>
-                     <div class='tt'><div class='tt-head'>Francia · 1 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#12 | <b>Referéndum en Francia: Mecanismos de Participación Ciudadana</b></div><div class='tt-meta'>Gubernamental — Francia</div></div></div></div>
-                 </div>`,
-                {"className": "ttip", "sticky": true}
-            );
-        
-    
-        var popup_b91e2d257b9410d0bdd6bebfcdca2370 = L.popup({"maxWidth": 460});
+    circle.bindTooltip(tip,{sticky:true,className:"ttip"});
+    const popup = L.popup({maxWidth:460}).setContent(tip);
+    circle.bindPopup(popup);
 
-        
-            var html_ec645f79ed14e9628db522ffc86626e7 = $(`<div id="html_ec645f79ed14e9628db522ffc86626e7" style="width: 100.0%; height: 100.0%;"><div class='tt'><div class='tt-head'>Francia · 1 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#12 | <b>Referéndum en Francia: Mecanismos de Participación Ciudadana</b></div><div class='tt-meta'>Gubernamental — Francia</div></div></div></div></div>`)[0];
-            popup_b91e2d257b9410d0bdd6bebfcdca2370.setContent(html_ec645f79ed14e9628db522ffc86626e7);
-        
+    // etiqueta con el número sobre la burbuja
+    L.marker([lat,lon],{
+      icon:L.divIcon({className:"", html:`<div class="id-label">${data.count}</div>`})
+    }).addTo(map);
 
-        circle_marker_cb7d521636c840913531aea2c9289bb3.bindPopup(popup_b91e2d257b9410d0bdd6bebfcdca2370)
-        ;
+    // móvil: click + touch abren el popup
+    circle.on("click",()=>circle.openPopup());
+    circle.on("touchstart",(e)=>{ e.originalEvent && e.originalEvent.preventDefault(); circle.openPopup(); });
+  }
 
-        
-    
-    
-            var marker_e3166792e5720e331b1d2d0b925e5bc8 = L.marker(
-                [46.2276, 2.2137],
-                {}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            var div_icon_fe0c3a49adaf9a667117c0777a3064f1 = L.divIcon({"className": "empty", "html": "\n            \u003cdiv class=\"id-label\" style=\"\n                position: relative;\n                left: 50%; top: 50%;\n                transform: translate(-50%, -61%);\n                color:#F04C28; font-weight:700; font-size:11px; text-align:center;\"\u003e1\u003c/div\u003e\n            "});
-            marker_e3166792e5720e331b1d2d0b925e5bc8.setIcon(div_icon_fe0c3a49adaf9a667117c0777a3064f1);
-        
-    
-            var circle_marker_34b652231bf41e0e8c9021ffaa6e3727 = L.circleMarker(
-                [15.7835, -90.2308],
-                {"bubblingMouseEvents": true, "color": null, "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EDE643", "fillOpacity": 0.95, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 13.5, "stroke": true, "weight": 0}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            circle_marker_34b652231bf41e0e8c9021ffaa6e3727.bindTooltip(
-                `<div>
-                     <div class='tt'><div class='tt-head'>Guatemala · 1 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#53 | <b>Avenida comunidad</b></div><div class='tt-meta'>Instituto 25a — Guatemala</div></div></div></div>
-                 </div>`,
-                {"className": "ttip", "sticky": true}
-            );
-        
-    
-        var popup_b4d1c244356acaca89e6d69cf7b97689 = L.popup({"maxWidth": 460});
-
-        
-            var html_19ca0d36a46c28c4c98b33e006a32f65 = $(`<div id="html_19ca0d36a46c28c4c98b33e006a32f65" style="width: 100.0%; height: 100.0%;"><div class='tt'><div class='tt-head'>Guatemala · 1 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#53 | <b>Avenida comunidad</b></div><div class='tt-meta'>Instituto 25a — Guatemala</div></div></div></div></div>`)[0];
-            popup_b4d1c244356acaca89e6d69cf7b97689.setContent(html_19ca0d36a46c28c4c98b33e006a32f65);
-        
-
-        circle_marker_34b652231bf41e0e8c9021ffaa6e3727.bindPopup(popup_b4d1c244356acaca89e6d69cf7b97689)
-        ;
-
-        
-    
-    
-            var marker_bb850c08df64c2ff55fceb9b72e4cc3f = L.marker(
-                [15.7835, -90.2308],
-                {}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            var div_icon_648c6865331190501ce590dcdb0f07c4 = L.divIcon({"className": "empty", "html": "\n            \u003cdiv class=\"id-label\" style=\"\n                position: relative;\n                left: 50%; top: 50%;\n                transform: translate(-50%, -61%);\n                color:#F04C28; font-weight:700; font-size:11px; text-align:center;\"\u003e1\u003c/div\u003e\n            "});
-            marker_bb850c08df64c2ff55fceb9b72e4cc3f.setIcon(div_icon_648c6865331190501ce590dcdb0f07c4);
-        
-    
-            var circle_marker_6fde3c598f6e5bf75a92a3efe4e1786a = L.circleMarker(
-                [23.6345, -102.5528],
-                {"bubblingMouseEvents": true, "color": null, "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EDE643", "fillOpacity": 0.95, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 16.524, "stroke": true, "weight": 0}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            circle_marker_6fde3c598f6e5bf75a92a3efe4e1786a.bindTooltip(
-                `<div>
-                     <div class='tt'><div class='tt-head'>México · 3 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#28 | <b>UTOPÍAS: Espacios Públicos Populares</b></div><div class='tt-meta'>Gobiernos locales y movimientos de izquierda — México</div></div><div class='tt-item'><div class='tt-title'>#54 | <b>Diálogos imposibles</b></div><div class='tt-meta'>Avina — México</div></div><div class='tt-item'><div class='tt-title'>#55 | <b>Democracia en plano digital</b></div><div class='tt-meta'>Avina — México</div></div></div></div>
-                 </div>`,
-                {"className": "ttip", "sticky": true}
-            );
-        
-    
-        var popup_fef82659c336c550092514d97deb4ce6 = L.popup({"maxWidth": 460});
-
-        
-            var html_f28b2c8a4a2b0c9c70f898b23b6ecddb = $(`<div id="html_f28b2c8a4a2b0c9c70f898b23b6ecddb" style="width: 100.0%; height: 100.0%;"><div class='tt'><div class='tt-head'>México · 3 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#28 | <b>UTOPÍAS: Espacios Públicos Populares</b></div><div class='tt-meta'>Gobiernos locales y movimientos de izquierda — México</div></div><div class='tt-item'><div class='tt-title'>#54 | <b>Diálogos imposibles</b></div><div class='tt-meta'>Avina — México</div></div><div class='tt-item'><div class='tt-title'>#55 | <b>Democracia en plano digital</b></div><div class='tt-meta'>Avina — México</div></div></div></div></div>`)[0];
-            popup_fef82659c336c550092514d97deb4ce6.setContent(html_f28b2c8a4a2b0c9c70f898b23b6ecddb);
-        
-
-        circle_marker_6fde3c598f6e5bf75a92a3efe4e1786a.bindPopup(popup_fef82659c336c550092514d97deb4ce6)
-        ;
-
-        
-    
-    
-            var marker_02afbb8954ec9af08e76fd4f279833b3 = L.marker(
-                [23.6345, -102.5528],
-                {}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            var div_icon_7bad82c86dccc6398bd129e4a7d7531c = L.divIcon({"className": "empty", "html": "\n            \u003cdiv class=\"id-label\" style=\"\n                position: relative;\n                left: 50%; top: 50%;\n                transform: translate(-50%, -61%);\n                color:#F04C28; font-weight:700; font-size:11px; text-align:center;\"\u003e3\u003c/div\u003e\n            "});
-            marker_02afbb8954ec9af08e76fd4f279833b3.setIcon(div_icon_7bad82c86dccc6398bd129e4a7d7531c);
-        
-    
-            var circle_marker_978d5d73448a77a53bc9e669fb9c4b05 = L.circleMarker(
-                [60.1282, 18.6435],
-                {"bubblingMouseEvents": true, "color": null, "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EDE643", "fillOpacity": 0.95, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 13.5, "stroke": true, "weight": 0}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            circle_marker_978d5d73448a77a53bc9e669fb9c4b05.bindTooltip(
-                `<div>
-                     <div class='tt'><div class='tt-head'>Suecia · 1 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#3 | <b>Educación Democrática - Contemplada en el sistema educativo</b></div><div class='tt-meta'>Suecia</div></div></div></div>
-                 </div>`,
-                {"className": "ttip", "sticky": true}
-            );
-        
-    
-        var popup_887100efe63203713409721805b7c767 = L.popup({"maxWidth": 460});
-
-        
-            var html_ee11498d07675f3d5c2ccd9c7e18d130 = $(`<div id="html_ee11498d07675f3d5c2ccd9c7e18d130" style="width: 100.0%; height: 100.0%;"><div class='tt'><div class='tt-head'>Suecia · 1 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#3 | <b>Educación Democrática - Contemplada en el sistema educativo</b></div><div class='tt-meta'>Suecia</div></div></div></div></div>`)[0];
-            popup_887100efe63203713409721805b7c767.setContent(html_ee11498d07675f3d5c2ccd9c7e18d130);
-        
-
-        circle_marker_978d5d73448a77a53bc9e669fb9c4b05.bindPopup(popup_887100efe63203713409721805b7c767)
-        ;
-
-        
-    
-    
-            var marker_3e87f4a9df2ff854bb32dc82800abb44 = L.marker(
-                [60.1282, 18.6435],
-                {}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            var div_icon_47ff8a398d2136a88e38324347cb4252 = L.divIcon({"className": "empty", "html": "\n            \u003cdiv class=\"id-label\" style=\"\n                position: relative;\n                left: 50%; top: 50%;\n                transform: translate(-50%, -61%);\n                color:#F04C28; font-weight:700; font-size:11px; text-align:center;\"\u003e1\u003c/div\u003e\n            "});
-            marker_3e87f4a9df2ff854bb32dc82800abb44.setIcon(div_icon_47ff8a398d2136a88e38324347cb4252);
-        
-    
-            var circle_marker_ed99ba2d820b9f122af5fb74e53795d4 = L.circleMarker(
-                [-32.5228, -55.7658],
-                {"bubblingMouseEvents": true, "color": null, "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#EDE643", "fillOpacity": 0.95, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 18.036, "stroke": true, "weight": 0}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            circle_marker_ed99ba2d820b9f122af5fb74e53795d4.bindTooltip(
-                `<div>
-                     <div class='tt'><div class='tt-head'>Uruguay · 4 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#2 | <b>Acá el agua hierve también a 100 grados</b></div><div class='tt-meta'>Fundación Siembra — Uruguay</div></div><div class='tt-item'><div class='tt-title'>#5 | <b>Faro Progresista</b></div><div class='tt-meta'>Fundación Siembra — Uruguay</div></div><div class='tt-item'><div class='tt-title'>#37 | <b>Foro Cono Sur</b></div><div class='tt-meta'>FES Uruguay — Uruguay</div></div><div class='tt-item'><div class='tt-title'>#46 | <b>El Frente Amplio te escucha</b></div><div class='tt-meta'>Frente Amplio uruguayo — Uruguay</div></div></div></div>
-                 </div>`,
-                {"className": "ttip", "sticky": true}
-            );
-        
-    
-        var popup_680103fe17e65ea78a7a0dfc0ecc2ddb = L.popup({"maxWidth": 460});
-
-        
-            var html_55bd6078c98b34a116a797871132dfc8 = $(`<div id="html_55bd6078c98b34a116a797871132dfc8" style="width: 100.0%; height: 100.0%;"><div class='tt'><div class='tt-head'>Uruguay · 4 iniciativas</div><div class='tt-body'><div class='tt-item'><div class='tt-title'>#2 | <b>Acá el agua hierve también a 100 grados</b></div><div class='tt-meta'>Fundación Siembra — Uruguay</div></div><div class='tt-item'><div class='tt-title'>#5 | <b>Faro Progresista</b></div><div class='tt-meta'>Fundación Siembra — Uruguay</div></div><div class='tt-item'><div class='tt-title'>#37 | <b>Foro Cono Sur</b></div><div class='tt-meta'>FES Uruguay — Uruguay</div></div><div class='tt-item'><div class='tt-title'>#46 | <b>El Frente Amplio te escucha</b></div><div class='tt-meta'>Frente Amplio uruguayo — Uruguay</div></div></div></div></div>`)[0];
-            popup_680103fe17e65ea78a7a0dfc0ecc2ddb.setContent(html_55bd6078c98b34a116a797871132dfc8);
-        
-
-        circle_marker_ed99ba2d820b9f122af5fb74e53795d4.bindPopup(popup_680103fe17e65ea78a7a0dfc0ecc2ddb)
-        ;
-
-        
-    
-    
-            var marker_2b5fb9f2d48336f4f821a99d4ebaef1a = L.marker(
-                [-32.5228, -55.7658],
-                {}
-            ).addTo(map_6ff6c1e9cf8cf13b8ab2b0ef049a165c);
-        
-    
-            var div_icon_021ab6d372aff67c56916e0676cc749b = L.divIcon({"className": "empty", "html": "\n            \u003cdiv class=\"id-label\" style=\"\n                position: relative;\n                left: 50%; top: 50%;\n                transform: translate(-50%, -61%);\n                color:#F04C28; font-weight:700; font-size:11px; text-align:center;\"\u003e4\u003c/div\u003e\n            "});
-            marker_2b5fb9f2d48336f4f821a99d4ebaef1a.setIcon(div_icon_021ab6d372aff67c56916e0676cc749b);
-        
+})();
 </script>
+</body>
 </html>
