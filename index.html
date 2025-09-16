@@ -463,54 +463,71 @@ html, body { background: #D4DADC; }
 </script>
 
 <script>
-/* Móvil: tap en la burbuja abre el mismo contenido del hover como POPUP.
-   No dependemos del nombre de la variable del mapa: lo buscamos dinámicamente. */
-(function () {
-  function getMapInstance() {
-    for (var k in window) {
-      try { if (window[k] instanceof L.Map) return window[k]; } catch(e) {}
-    }
+/* Mejora de precisión en móvil:
+   - Detecta pantallas táctiles (pointer:coarse).
+   - A cada CircleMarker le añade un "halo" invisible más grande que recibe el tap.
+   - El halo abre el mismo popup del círculo original.
+*/
+(function(){
+  function isCoarse(){ return window.matchMedia && window.matchMedia("(pointer: coarse)").matches; }
+  function getMap(){
+    for (var k in window) { try { if (window[k] instanceof L.Map) return window[k]; } catch(e){} }
     return null;
   }
-  function hook(layer) {
-    if (!layer || !layer.on || !layer.openPopup) return;
-    layer.on('click', function () { this.openPopup(); });
-    layer.on('touchstart', function (e) {
-      if (e && e.originalEvent) e.originalEvent.preventDefault();
-      this.openPopup();
-    });
-  }
-  function whenReady(fn) {
-    if (document.readyState !== 'loading') fn();
-    else document.addEventListener('DOMContentLoaded', fn);
-  }
-  whenReady(function () {
-    var map = getMapInstance();
-    if (!map) return;
 
-    // Aplica a los círculos existentes…
-    map.eachLayer(function (lyr) {
-      if (lyr instanceof L.CircleMarker) hook(lyr);
-    });
+  function addTouchHalo(circle){
+    if (!isCoarse()) return; // solo en móvil / táctil
+    var r = circle.options.radius || 10;
+    var targetR = Math.max(r, 26); // ⇦ ajusta aquí el "mínimo tocable" (24–30 va muy bien)
+    var halo = L.circleMarker(circle.getLatLng(), {
+      radius: targetR,
+      stroke: false,
+      color: null,
+      fillColor: "#000",
+      fillOpacity: 0.001,      // casi invisible pero "pintado" ⇒ recibe eventos
+      interactive: true,
+      bubblingMouseEvents: false
+    }).addTo(circle._map);
+
+    function open(e){ if (e && e.originalEvent) e.originalEvent.preventDefault(); circle.openPopup(); }
+    halo.on('click', open);
+    halo.on('touchstart', open);
+  }
+
+  function hook(circle){
+    if (!circle || !circle.on || !circle.openPopup) return;
+    // Tap/click sobre el propio círculo
+    circle.on('click', function(){ this.openPopup(); });
+    circle.on('touchstart', function(e){ if (e && e.originalEvent) e.originalEvent.preventDefault(); this.openPopup(); });
+    // Halo ampliado para móvil
+    addTouchHalo(circle);
+  }
+
+  function ready(fn){ (document.readyState !== 'loading') ? fn() : document.addEventListener('DOMContentLoaded', fn); }
+
+  ready(function(){
+    var map = getMap(); if (!map) return;
+
+    // Aplica a los ya existentes…
+    map.eachLayer(function(lyr){ if (lyr instanceof L.CircleMarker) hook(lyr); });
     // …y a los que se agreguen después.
-    map.on('layeradd', function (e) {
-      if (e.layer instanceof L.CircleMarker) hook(e.layer);
-    });
+    map.on('layeradd', function(e){ if (e.layer instanceof L.CircleMarker) hook(e.layer); });
 
-    // Dentro del panel, el scroll no mueve el mapa.
-    map.on('popupopen', function (e) {
-      try {
+    // El scroll dentro del listado no mueve el mapa
+    map.on('popupopen', function(e){
+      try{
         var body = e.popup.getElement().querySelector('.tt-body');
-        if (body) {
+        if (body){
           L.DomEvent.disableClickPropagation(body);
           L.DomEvent.disableScrollPropagation(body);
           body.style.webkitOverflowScrolling = 'touch';
         }
-      } catch (_) {}
+      }catch(_){}
     });
   });
 })();
 </script>
+
 
     
 </html>
